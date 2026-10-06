@@ -1,0 +1,61 @@
+import { Cta } from "@/components/ui/Cta";
+
+// The hero is a private room with the lights low. One warm source —
+// a candle just out of frame — breathes beneath the name. No video, no
+// carousel, no stock: atmosphere first, then the name, then the invitation.
+const d = (ms: number) => ({ "--d": `${ms}ms` }) as React.CSSProperties;
+
+export function Hero() {
+  return (
+    <section aria-labelledby="hero-title" className="tone-dark grain relative isolate flex min-h-[100svh] min-h-[640px] flex-col overflow-hidden">
+      {/* Atmosphere */}
+      <div aria-hidden className="hero-lights absolute inset-0 -z-10">
+        <div className="candle absolute inset-x-[-10%] bottom-[-35%] h-[95%] bg-[radial-gradient(50%_50%_at_50%_50%,rgba(205,140,70,0.34),rgba(150,84,38,0.14)_42%,transparent_72%)]" />
+        <div className="drift absolute left-[8%] top-[10%] h-[70%] w-[60%] rounded-full bg-[radial-gradient(closest-side,rgba(237,229,214,0.05),transparent)]" />
+        <div className="absolute right-[-15%] top-[-20%] h-[70%] w-[55%] rounded-full bg-[radial-gradient(closest-side,rgba(108,30,34,0.22),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_40%,transparent_40%,rgba(8,6,4,0.85)_100%)]" />
+      </div>
+
+      <div className="container-x relative flex flex-1 flex-col justify-end pb-10 pt-[calc(var(--header-h)+3rem)] md:pb-14">
+        <p className="hero-fade text-eyebrow flex items-center gap-4" style={d(300)}>
+          <span aria-hidden className="hero-draw inline-block h-px w-10 bg-accent" style={d(200)} />
+          Private Chef · Connecticut
+        </p>
+
+        <h1 id="hero-title" className="text-display hero-name mt-8 md:mt-10">
+          <span className="hero-rise line-mask"><span style={d(350)}>
+            <span className="mr-[0.18em] align-[0.62em] font-display text-[0.2em] italic tracking-normal text-accent">Chef</span>
+            Ray
+          </span></span>
+          <span className="hero-rise line-mask"><span style={d(480)} className="pl-[0.7em] italic md:pl-[1.4em]">Gennaro</span></span>
+          <span className="sr-only">, Italian-American private chef in Connecticut</span>
+        </h1>
+
+        <div className="mt-12 grid gap-10 md:mt-16 md:grid-cols-12 md:items-end">
+          <p className="hero-fade text-lead max-w-[30rem] md:col-span-6 md:col-start-1" style={d(650)}>
+            Private tables for people who could dine anywhere. Italian-American cooking
+            with New Haven roots — served in your home, aboard your yacht, on your island.
+          </p>
+          <div className="hero-fade flex flex-wrap items-center gap-x-10 gap-y-6 md:col-span-6 md:justify-end" style={d(800)}>
+            <Cta href="/inquire">Request an evening</Cta>
+            <Cta href="/experiences" variant="quiet">The experiences</Cta>
+          </div>
+        </div>
+
+        <div className="mt-14 md:mt-20">
+          <div aria-hidden className="hero-draw h-px bg-line" style={d(700)} />
+          <div className="hero-fade mt-5 flex items-center justify-between text-[0.66rem] uppercase tracking-[0.28em] text-fg-muted" style={d(1000)}>
+            <span>New Haven roots</span>
+            <span className="hidden sm:inline">Connecticut · New York · The Islands</span>
+            <span className="flex items-center gap-3">
+              Scroll
+              <span aria-hidden className="relative block h-6 w-px overflow-hidden bg-line">
+                <span className="scroll-cue absolute inset-0 bg-accent" />
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
