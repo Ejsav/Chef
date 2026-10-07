@@ -1,4 +1,5 @@
 import { Cta } from "@/components/ui/Cta";
+import { HeroLight } from "@/components/system/HeroLight";
 
 // The hero is a private room with the lights low. One warm source —
 // a candle just out of frame — breathes beneath the name. No video, no
@@ -7,10 +8,11 @@ const d = (ms: number) => ({ "--d": `${ms}ms` }) as React.CSSProperties;
 
 export function Hero() {
   return (
-    <section aria-labelledby="hero-title" className="tone-dark grain relative isolate flex min-h-[100svh] min-h-[640px] flex-col overflow-hidden">
+    <section id="hero" aria-labelledby="hero-title" className="tone-dark grain relative isolate flex min-h-[max(100svh,640px)] flex-col overflow-hidden">
       {/* Atmosphere */}
+      <HeroLight targetId="hero" />
       <div aria-hidden className="hero-lights absolute inset-0 -z-10">
-        <div className="candle absolute inset-x-[-10%] bottom-[-35%] h-[95%] bg-[radial-gradient(50%_50%_at_50%_50%,rgba(205,140,70,0.34),rgba(150,84,38,0.14)_42%,transparent_72%)]" />
+        <div className="hero-light absolute inset-0"><div className="candle absolute inset-x-[-10%] bottom-[-35%] h-[95%] bg-[radial-gradient(50%_50%_at_50%_50%,rgba(205,140,70,0.34),rgba(150,84,38,0.14)_42%,transparent_72%)]" /></div>
         <div className="drift absolute left-[8%] top-[10%] h-[70%] w-[60%] rounded-full bg-[radial-gradient(closest-side,rgba(237,229,214,0.05),transparent)]" />
         <div className="absolute right-[-15%] top-[-20%] h-[70%] w-[55%] rounded-full bg-[radial-gradient(closest-side,rgba(108,30,34,0.22),transparent)]" />
         <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_40%,transparent_40%,rgba(8,6,4,0.85)_100%)]" />
@@ -22,7 +24,7 @@ export function Hero() {
           Private Chef · Connecticut
         </p>
 
-        <h1 id="hero-title" className="text-display hero-name mt-8 md:mt-10">
+        <h1 id="hero-title" className="text-display hero-name hero-depth mt-8 md:mt-10">
           <span className="hero-rise line-mask"><span style={d(350)}>
             <span className="mr-[0.18em] align-[0.62em] font-display text-[0.2em] italic tracking-normal text-accent">Chef</span>
             Ray
@@ -37,8 +39,8 @@ export function Hero() {
             with New Haven roots — served in your home, aboard your yacht, on your island.
           </p>
           <div className="hero-fade flex flex-wrap items-center gap-x-10 gap-y-6 md:col-span-6 md:justify-end" style={d(800)}>
-            <Cta href="/inquire">Request an evening</Cta>
-            <Cta href="/experiences" variant="quiet">The experiences</Cta>
+            <Cta href="/inquire" track="cta:hero-request">Request an evening</Cta>
+            <Cta href="#possibilities" variant="quiet" track="cta:hero-compose">Compose an evening</Cta>
           </div>
         </div>
 

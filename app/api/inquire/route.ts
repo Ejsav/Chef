@@ -1,10 +1,29 @@
 import { NextResponse } from "next/server";
-import { inquirySchema } from "@/lib/inquiry";
-import { experienceOptions } from "@/lib/inquiry";
+import { details, summarize } from "@/lib/inquiry";
+import { inquirySchema } from "@/lib/inquiry-schema";
+import { verifyInvite } from "@/lib/invite";
 
-// Validates every inquiry server-side. If Resend is configured it emails the
-// office; otherwise it logs (so local/dev never silently drops a lead).
+// Every request is validated against the same rules the conversation uses,
+// tagged with where the visitor came from, given a reference, and sent to the
+// office (Resend) — or logged when email is not configured, so nothing is lost.
+
+// Best-effort burst protection per instance. Serverless instances don't share
+// memory; put this behind Vercel Firewall rate limiting for a hard guarantee.
+const hits = new Map<string, number[]>();
+function limited(ip: string) {
+  const now = Date.now();
+  const recent = (hits.get(ip) ?? []).filter((t) => now - t < 10 * 60_000);
+  recent.push(now);
+  hits.set(ip, recent);
+  return recent.length > 6;
+}
+
+const reference = () => `RG-${Date.now().toString(36).slice(-4).toUpperCase()}${Math.random().toString(36).slice(2, 4).toUpperCase()}`;
+
 export async function POST(req: Request) {
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
+  if (limited(ip)) return NextResponse.json({ ok: false, error: "Too many requests. Please write to us directly." }, { status: 429 });
+
   let json: unknown;
   try {
     json = await req.json();
@@ -15,29 +34,35 @@ export async function POST(req: Request) {
   const parsed = inquirySchema.safeParse(json);
   if (!parsed.success) {
     const errors: Record<string, string> = {};
-    for (const issue of parsed.error.issues) {
-      const key = String(issue.path[0] ?? "form");
-      errors[key] ??= issue.message;
-    }
+    for (const issue of parsed.error.issues) errors[String(issue.path[0] ?? "form")] ??= issue.message;
     return NextResponse.json({ ok: false, errors }, { status: 422 });
   }
 
   const data = parsed.data;
-  // Bots fill the honeypot — accept quietly, send nothing.
-  if (data.company) return NextResponse.json({ ok: true });
+  const ref = reference();
+  if (data.company) return NextResponse.json({ ok: true, ref }); // honeypot: accept quietly
 
-  const experience = experienceOptions.find((o) => o.value === data.experience)?.label ?? data.experience;
-  const lines = [
-    `Name: ${data.name}`,
-    `Email: ${data.email}`,
-    data.phone && `Phone: ${data.phone}`,
-    `Experience: ${experience}`,
-    data.date && `Date: ${data.date}`,
-    `Location: ${data.location}`,
-    data.guests && `Guests: ${data.guests}`,
+  const invite = data.invite ? verifyInvite(data.invite) : null;
+  const invitedAs = invite?.ok ? invite.payload.n : null;
+  const summary = summarize(data);
+  const a = data.attribution;
+  const origin = [
+    a?.first && `First touch: ${[a.first.source, a.first.medium, a.first.campaign].filter(Boolean).join(" / ") || "direct"} — landed on ${a.first.landing ?? "?"}${a.first.referrer ? ` from ${a.first.referrer}` : ""}${a.first.ts ? ` (${new Date(a.first.ts).toDateString()})` : ""}`,
+    a?.session && `This visit: ${[a.session.source, a.session.medium, a.session.campaign].filter(Boolean).join(" / ") || "direct"} — landed on ${a.session.landing ?? "?"}${a.session.referrer ? ` from ${a.session.referrer}` : ""}`,
+    invitedAs && `Private invitation: ${invitedAs}`,
+    data.invite && !invite?.ok && `Invitation token present but ${invite?.reason}`,
+  ].filter(Boolean) as string[];
+
+  const text = [
+    summary,
     "",
-    data.message || "(no message)",
-  ].filter((l) => l !== undefined && l !== "") as string[];
+    ...details(data).map((r) => `${r.label}: ${r.value}`),
+    "",
+    "— Origin —",
+    ...(origin.length ? origin : ["No attribution captured"]),
+    "",
+    `Reference: ${ref}`,
+  ].join("\n");
 
   const { RESEND_API_KEY, INQUIRY_TO_EMAIL, INQUIRY_FROM_EMAIL } = process.env;
   if (RESEND_API_KEY && INQUIRY_TO_EMAIL && INQUIRY_FROM_EMAIL) {
@@ -48,17 +73,17 @@ export async function POST(req: Request) {
         from: INQUIRY_FROM_EMAIL,
         to: INQUIRY_TO_EMAIL,
         reply_to: data.email,
-        subject: `Inquiry — ${experience} — ${data.name}`,
-        text: lines.join("\n"),
+        subject: `${ref} · ${data.name} · ${summary}`.slice(0, 200),
+        text,
       }),
     });
     if (!res.ok) {
       console.error("[inquire] Resend failed", res.status, await res.text());
-      return NextResponse.json({ ok: false, error: "We could not send your inquiry. Please email us directly." }, { status: 502 });
+      return NextResponse.json({ ok: false, error: "We could not send your request. Please write to us directly." }, { status: 502 });
     }
   } else {
-    console.info("[inquire] Email delivery not configured. Inquiry received:\n" + lines.join("\n"));
+    console.info(`[inquire] Email not configured. Request received:\n${text}`);
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, ref });
 }

@@ -73,20 +73,27 @@ type Props = {
   /** aspect ratio utility, e.g. "aspect-[4/5]" */
   ratio?: string;
   reveal?: boolean;
+  /** word the cursor carries over this plate, e.g. "View" */
+  cursorLabel?: string;
 };
 
-export function Plate({ tone, alt, label, src, sizes = "(min-width: 1024px) 50vw, 100vw", priority, className, ratio = "aspect-[4/5]", reveal = true }: Props) {
+export function Plate({ tone, alt, label, src, sizes = "(min-width: 1024px) 50vw, 100vw", priority, className, ratio = "aspect-[4/5]", reveal = true, cursorLabel }: Props) {
   return (
     <figure
       className={cn("group/plate relative overflow-hidden bg-bg-elevated", ratio, className)}
       data-reveal={reveal ? "fade" : undefined}
+      data-cursor-label={cursorLabel}
     >
+      {/* Two planes: the parallax wrapper drifts with scroll (CSS scroll
+          timeline), the inner layer settles from 1.06 on reveal. */}
+      <div className="parallax absolute inset-x-0 -inset-y-[5%]">
       <div className="absolute inset-0 scale-[1.06] transition-transform duration-[2400ms] ease-out-expo group-[.is-in]/plate:scale-100">
         {src ? (
           <Image src={src} alt={alt} fill sizes={sizes} priority={priority} className="object-cover" />
         ) : (
           <div role="img" aria-label={alt} className="grain absolute inset-0" style={{ backgroundImage: studies[tone] }} />
         )}
+      </div>
       </div>
       {/* Inset hairline frame — the edge of a printed photograph */}
       <div aria-hidden className="pointer-events-none absolute inset-3 border border-[rgba(237,229,214,0.12)] md:inset-4" />

@@ -7,6 +7,12 @@ import { Footer } from "@/components/layout/Footer";
 import { SmoothScroll } from "@/components/motion/SmoothScroll";
 import { RevealObserver } from "@/components/motion/RevealObserver";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { bootScript } from "@/lib/boot";
+import { Prelude } from "@/components/system/Prelude";
+import { Transitions } from "@/components/system/Transitions";
+import { Cursor } from "@/components/system/Cursor";
+import { Telemetry } from "@/components/system/Telemetry";
+import { MobileBar } from "@/components/system/MobileBar";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -32,23 +38,29 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: "#110c09",
   colorScheme: "dark",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${bodoni.variable} ${instrument.variable}`} suppressHydrationWarning>
       <head>
-        {/* Opt into reveal states before first paint; without JS everything stays visible. */}
-        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+        {/* Capability tier, pointer type and prelude decided before first paint. */}
+        <script dangerouslySetInnerHTML={{ __html: bootScript }} />
         <JsonLd />
       </head>
       <body>
         <a href="#main" className="skip-link">Skip to content</a>
+        <Prelude />
         <SmoothScroll />
         <RevealObserver />
+        <Transitions />
+        <Telemetry />
         <Header />
         <main id="main">{children}</main>
         <Footer />
+        <MobileBar />
+        <Cursor />
       </body>
     </html>
   );

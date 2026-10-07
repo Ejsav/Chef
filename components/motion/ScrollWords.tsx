@@ -1,45 +1,26 @@
-"use client";
-import { useEffect, useRef } from "react";
-import { gsap, ScrollTrigger } from "@/lib/gsap";
-
 // Manifesto treatment: words begin as ghosts and come into full ink as the
-// reader moves through them — reading pace set by the scroll, like a slow
-// pan across a page. Words in `emphasis` render italic in brass.
+// reader moves through them — reading pace set by the scroll. Pure CSS
+// (a named view timeline on the paragraph, each word owning a slice of its
+// range), so it costs no JavaScript and runs off the main thread. Browsers
+// without scroll timelines, and reduced motion, simply show the text.
+// Words in `emphasis` render italic in brass.
 type Props = { text: string; emphasis?: string[]; className?: string };
 
 export function ScrollWords({ text, emphasis = [], className }: Props) {
-  const ref = useRef<HTMLParagraphElement>(null);
   const words = text.split(" ");
   const emph = new Set(emphasis.map((w) => w.toLowerCase()));
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    const spans = el.querySelectorAll<HTMLSpanElement>("[data-word]");
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        spans,
-        { opacity: 0.2 },
-        {
-          opacity: 1,
-          ease: "none",
-          stagger: 0.12,
-          scrollTrigger: { trigger: el, start: "top 78%", end: "bottom 42%", scrub: 0.6 },
-        },
-      );
-    }, el);
-    ScrollTrigger.refresh();
-    return () => ctx.revert();
-  }, []);
-
+  const span = 46; // % of the cover range the whole sentence takes to resolve
   return (
-    <p ref={ref} className={className}>
+    <p className={`scroll-words ${className ?? ""}`}>
       {words.map((w, i) => {
         const bare = w.replace(/[^\p{L}'’]/gu, "").toLowerCase();
+        const start = 12 + (i / words.length) * span;
         return (
-          <span key={i} data-word className={emph.has(bare) ? "italic-accent" : undefined}>
+          <span
+            key={i}
+            className={emph.has(bare) ? "italic-accent" : undefined}
+            style={{ "--w0": `${start.toFixed(1)}%`, "--w1": `${(start + 9).toFixed(1)}%` } as React.CSSProperties}
+          >
             {w}
             {i < words.length - 1 ? " " : ""}
           </span>

@@ -9,13 +9,16 @@ type Props = {
   children: React.ReactNode;
   variant?: "primary" | "quiet";
   className?: string;
+  /** analytics event name, e.g. "cta:hero-request" */
+  track?: string;
 };
 
-export function Cta({ href, children, variant = "primary", className }: Props) {
+export function Cta({ href, children, variant = "primary", className, track }: Props) {
   if (variant === "quiet") {
     return (
       <Link
         href={href}
+        data-track={track}
         className={cn(
           "group inline-flex items-center gap-3 text-[0.74rem] font-medium uppercase tracking-[0.26em] text-fg",
           className,
@@ -29,8 +32,10 @@ export function Cta({ href, children, variant = "primary", className }: Props) {
   return (
     <Link
       href={href}
+      data-track={track}
+      data-magnetic="0.22"
       className={cn(
-        "group relative inline-flex h-14 items-center gap-4 overflow-hidden border border-accent/70 px-8 text-[0.74rem] font-medium uppercase tracking-[0.26em] text-fg transition-colors duration-700 ease-out-expo hover:border-accent hover:text-[rgb(var(--ink))]",
+        "group relative inline-flex h-14 items-center gap-4 overflow-hidden border active:scale-[0.97] transition-[color,border-color,scale] border-accent/70 px-8 text-[0.74rem] font-medium uppercase tracking-[0.26em] text-fg duration-700 ease-out-expo hover:border-accent hover:text-[rgb(var(--ink))]",
         className,
       )}
     >

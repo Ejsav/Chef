@@ -5,9 +5,11 @@ import { InquiryClose } from "@/components/sections/InquiryClose";
 import { Plate } from "@/components/ui/Plate";
 import { Cta } from "@/components/ui/Cta";
 import { cn } from "@/lib/utils";
+import { Composer } from "@/components/sections/Composer";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
 export const metadata: Metadata = {
-  title: "Experiences — Private Dining, Islands & Lessons",
+  title: "Experiences — Private Dining, Yachts, Islands & Lessons",
   description:
     "Private dinners in your residence, private-island and yacht dining, private cooking lessons and hosted occasions with Chef Ray Gennaro, Connecticut.",
   alternates: { canonical: "/experiences" },
@@ -17,12 +19,14 @@ export const metadata: Metadata = {
 export default function ExperiencesPage() {
   return (
     <>
+      <Breadcrumbs items={[{ name: "Experiences", path: "/experiences" }]} />
       <PageIntro
         id="experiences-title"
         eyebrow="The Experiences"
-        lines={["Four ways to be", "cooked for."]}
-        lead={<p>Every evening is composed from nothing for one table. These are the four forms it usually takes — and the starting point for the ones it does not.</p>}
+        lines={["Begin with", "the room."]}
+        lead={<p>Every evening is composed from nothing for one table: the place, the people, the reason for gathering. Start there — the four forms an evening usually takes follow below.</p>}
       />
+      <Composer index="I" />
 
       {experiences.map((exp, i) => {
         const flip = i % 2 === 1;
@@ -78,7 +82,7 @@ export default function ExperiencesPage() {
                 </dl>
 
                 <div className="mt-10" data-reveal>
-                  <Cta href={`/inquire?experience=${exp.slug}`} variant="quiet">Inquire about {exp.name}</Cta>
+                  <Cta href={`/inquire?experience=${exp.slug}`} variant="quiet" track={`cta:experience-${exp.slug}`}>Inquire about {exp.name}</Cta>
                 </div>
               </div>
             </div>

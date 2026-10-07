@@ -6,6 +6,7 @@ import { nav } from "@/lib/site";
 import { getLenis } from "@/lib/lenis";
 import { cn } from "@/lib/utils";
 import { Monogram } from "@/components/ui/Monogram";
+import { Ambience } from "@/components/system/Ambience";
 
 // The header behaves like good front-of-house staff: present when you need
 // it, gone when you are reading. Transparent over the hero, a smoked-glass
@@ -63,6 +64,7 @@ export function Header() {
   return (
     <>
       <header
+        id="site-header"
         className={cn(
           "fixed inset-x-0 top-0 z-50 transition-[transform,background-color,border-color] duration-700 ease-out-expo",
           hidden && !open ? "-translate-y-full" : "translate-y-0",
@@ -72,7 +74,7 @@ export function Header() {
         )}
       >
         <div className="container-x flex h-[var(--header-h)] items-center justify-between text-[rgb(var(--ivory))]">
-          <Link href="/" className="group flex items-center gap-3" aria-label="Ray Gennaro — home">
+          <Link href="/" className="group flex items-center gap-3">
             <Monogram className="h-10 w-10 text-[rgb(var(--brass))] transition-transform duration-1000 ease-out-expo group-hover:rotate-[-8deg]" title="" />
             <span className="sr-only font-display text-[1.15rem] tracking-[0.02em] sm:not-sr-only">
               Ray Gennaro
@@ -80,7 +82,7 @@ export function Header() {
           </Link>
 
           <nav aria-label="Primary" className="hidden items-center gap-10 md:flex">
-            {nav.slice(0, 2).map((item) => (
+            {nav.filter((i) => i.href !== "/inquire").map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -93,14 +95,19 @@ export function Header() {
                 {item.label}
               </Link>
             ))}
+            <Ambience className="-mr-2" />
             <Link
               href="/inquire"
+              data-magnetic="0.18"
+              data-track="cta:header"
               className="border border-[rgba(190,156,104,0.6)] px-5 py-2.5 text-[0.7rem] font-medium uppercase tracking-[0.28em] transition-colors duration-700 ease-out-expo hover:border-[rgb(var(--brass))] hover:bg-[rgb(var(--brass))] hover:text-[rgb(var(--ink))]"
             >
               Request an evening
             </Link>
           </nav>
 
+          <div className="flex items-center gap-2 md:hidden">
+          <Ambience />
           <button
             ref={toggleRef}
             type="button"
@@ -113,6 +120,7 @@ export function Header() {
             <span className={cn("absolute h-px w-6 bg-current transition-transform duration-700 ease-out-expo", open ? "rotate-45" : "-translate-y-[4px]")} />
             <span className={cn("absolute h-px w-6 bg-current transition-transform duration-700 ease-out-expo", open ? "-rotate-45" : "translate-y-[4px]")} />
           </button>
+          </div>
         </div>
       </header>
 

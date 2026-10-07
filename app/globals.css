@@ -322,3 +322,139 @@ textarea.field { resize: vertical; min-height: 8rem; line-height: 1.6; }
 @media (max-width: 640px) {
   .hero-name { font-size: 19vw; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   THE WORLD — runtime layer (prelude, transitions, cursor, light)
+   ══════════════════════════════════════════════════════════════ */
+
+/* Prelude ─────────────────────────────────────────────────────── */
+.prelude-veil { display: none; }
+html.prelude .prelude-veil {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  animation: veil-lift 1.1s var(--ease-in-out-expo) 1.6s both;
+}
+@keyframes veil-lift {
+  from { clip-path: inset(0 0 0 0); }
+  to { clip-path: inset(0 0 100% 0); visibility: hidden; }
+}
+.prelude-ring { stroke-dasharray: 1; stroke-dashoffset: 1; animation: ring-draw 1.3s var(--ease-in-out-expo) 0.1s forwards; transform: rotate(-90deg); transform-origin: center; }
+.prelude-ring--inner { animation-delay: 0.3s; opacity: 0.6; }
+@keyframes ring-draw { to { stroke-dashoffset: 0; } }
+.prelude-name { animation: rise 1.4s var(--ease-out-expo) 0.35s both; }
+.prelude-rule { transform-origin: left; animation: draw-x 1.2s var(--ease-in-out-expo) 0.5s both; }
+.prelude-sub { animation: fade-up 1s var(--ease-out-expo) 0.75s both; }
+
+/* While the veil is up, the hero waits its turn. */
+html.prelude .hero-rise > span,
+html.prelude .hero-fade,
+html.prelude .hero-draw { animation-delay: calc(var(--d, 0ms) + 1900ms); }
+html.prelude .hero-lights { animation-delay: 1500ms; }
+html.prelude #site-header { animation: fade-up 1.2s var(--ease-out-expo) 2.3s both; }
+
+/* Page transitions (View Transitions API) ─────────────────────── */
+/* The header persists across pages; the page beneath it is replaced by
+   a curtain rising from the floor while the old page sinks into shadow. */
+#site-header { view-transition-name: site-header; }
+#mobile-bar { view-transition-name: mobile-bar; }
+::view-transition-group(site-header),
+::view-transition-group(mobile-bar) { animation: none; }
+::view-transition-old(root) { animation: vt-out 0.9s var(--ease-in-out-expo) both; }
+::view-transition-new(root) { animation: vt-in 1.05s var(--ease-in-out-expo) both; }
+@keyframes vt-out { to { opacity: 0.35; transform: translate3d(0, -3%, 0) scale(0.985); filter: brightness(0.35); } }
+@keyframes vt-in { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0 0 0 0); } }
+
+/* Cursor ──────────────────────────────────────────────────────── */
+html.has-cursor, html.has-cursor * { cursor: none !important; }
+html.has-cursor input, html.has-cursor textarea, html.has-cursor select,
+html.has-cursor [contenteditable] { cursor: text !important; }
+html.has-cursor select { cursor: pointer !important; }
+.cursor-ring {
+  position: fixed; top: 0; left: 0; z-index: 400; pointer-events: none;
+  width: 2.25rem; height: 2.25rem; margin: -1.125rem 0 0 -1.125rem;
+  border: 1px solid rgb(var(--ivory) / 0.45);
+  border-radius: 999px;
+  display: flex; align-items: center; justify-content: center;
+  transition: width 600ms var(--ease-out-expo), height 600ms var(--ease-out-expo), margin 600ms var(--ease-out-expo),
+    background-color 600ms var(--ease-out-expo), border-color 600ms var(--ease-out-expo), opacity 400ms, scale 300ms var(--ease-out-expo);
+  mix-blend-mode: normal;
+}
+.cursor-dot {
+  position: fixed; top: 0; left: 0; z-index: 401; pointer-events: none;
+  width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 999px;
+  background: rgb(var(--brass));
+  transition: opacity 300ms, scale 400ms var(--ease-out-expo);
+}
+.cursor-label {
+  font-size: 0.58rem; letter-spacing: 0.26em; text-transform: uppercase; color: rgb(var(--ink));
+  opacity: 0; transition: opacity 300ms;
+}
+.cursor-ring[data-state="link"] { width: 3.5rem; height: 3.5rem; margin: -1.75rem 0 0 -1.75rem; border-color: rgb(var(--brass) / 0.8); background: rgb(var(--brass) / 0.08); }
+.cursor-ring[data-state="label"] { width: 5.75rem; height: 5.75rem; margin: -2.875rem 0 0 -2.875rem; border-color: transparent; background: rgb(var(--brass)); }
+.cursor-ring[data-state="label"] .cursor-label { opacity: 1; }
+.cursor-ring[data-state="text"], .cursor-ring[data-state="hidden"] { opacity: 0; }
+.cursor-ring[data-pressed="true"] { scale: 0.82; }
+.cursor-dot[data-state="label"], .cursor-dot[data-state="text"], .cursor-dot[data-state="hidden"] { opacity: 0; }
+[data-magnetic] { transition: translate 700ms var(--ease-out-expo); }
+
+/* Scroll-driven parallax — compositor-only, zero JS ───────────── */
+@supports (animation-timeline: view()) {
+  html[data-tier="full"] .parallax {
+    animation: parallax-y linear both;
+    animation-timeline: view();
+    animation-range: cover;
+  }
+}
+@keyframes parallax-y { from { translate: 0 -4%; } to { translate: 0 4%; } }
+
+/* Hero light follows the visitor ─────────────────────────────── */
+.hero-light { translate: calc(var(--lx, 0) * 7%) calc(var(--ly, 0) * 5%); transition: translate 1.6s var(--ease-out-expo); }
+.hero-depth { translate: calc(var(--lx, 0) * -10px) calc(var(--ly, 0) * -6px); transition: translate 1.8s var(--ease-out-expo); }
+
+/* Capability tiers ─────────────────────────────────────────────── */
+html[data-tier="lite"] .candle, html[data-tier="lite"] .drift,
+html[data-tier="still"] .candle, html[data-tier="still"] .drift { animation: none !important; }
+html[data-tier="still"] .hero-light, html[data-tier="still"] .hero-depth { translate: none !important; }
+
+/* Safe areas for the mobile action bar */
+.safe-bottom { padding-bottom: max(0.875rem, env(safe-area-inset-bottom)); }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none !important; }
+  .prelude-veil { display: none !important; }
+}
+@keyframes sound-bar { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.35); } }
+.sound-bar { animation: sound-bar 1.4s var(--ease-silk) infinite; }
+
+/* Primary action as a class, for buttons outside <Cta> (forms, dialogs). */
+.cta-primary {
+  position: relative; display: inline-flex; white-space: nowrap; height: 3.5rem; align-items: center; justify-content: center; gap: 1rem;
+  overflow: hidden; border: 1px solid rgb(var(--accent) / 0.7); padding: 0 2.5rem;
+  font-size: 0.74rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.26em; color: rgb(var(--fg));
+  transition: color 700ms var(--ease-out-expo), border-color 700ms var(--ease-out-expo), scale 300ms var(--ease-out-expo), translate 700ms var(--ease-out-expo);
+}
+.cta-primary:hover { color: rgb(var(--ink)); border-color: rgb(var(--accent)); }
+.cta-primary:active { scale: 0.97; }
+.cta-primary:disabled { opacity: 0.6; cursor: wait; }
+.cta-fill { position: absolute; inset: 0; transform: scaleY(0); transform-origin: bottom; background: rgb(var(--accent)); transition: transform 700ms var(--ease-out-expo); }
+.cta-primary:hover .cta-fill { transform: scaleY(1); }
+
+/* Headings that receive focus programmatically (step changes) are announced,
+   not outlined — the visible cue is the new question itself. */
+[tabindex="-1"]:focus, [tabindex="-1"]:focus-visible { outline: none; }
+
+/* Manifesto words — see components/motion/ScrollWords.tsx */
+@supports (animation-timeline: view()) {
+  html[data-tier="full"] .scroll-words, html[data-tier="lite"] .scroll-words { view-timeline-name: --words; }
+  html[data-tier="full"] .scroll-words > span, html[data-tier="lite"] .scroll-words > span {
+    animation: word-ink linear both;
+    animation-timeline: --words;
+    animation-range: cover var(--w0) cover var(--w1);
+  }
+}
+@keyframes word-ink { from { opacity: 0.2; } to { opacity: 1; } }

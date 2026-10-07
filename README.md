@@ -15,26 +15,70 @@ The benchmark is luxury hospitality (Aman, Casa Cipriani, private members' clubs
 | **Rhythm** | Sections alternate dark / linen like the pages of a menu card. Tones are CSS-variable scopes (`.tone-dark`, `.tone-walnut`, `.tone-linen`), so every component works on all of them. |
 | **Motion** | Slow, weighted, cinematic easing (`expo.out`, 1.4–1.8s). Lines rise from masks, hairlines draw, and the candle glow breathes. Everything respects `prefers-reduced-motion`. |
 
-## Structure
+## The system
 
-```
-app/
-  page.tsx               Home: Hero, Premise, Experiences, Chef, Evening, Discretion, Close
-  experiences/page.tsx   The four experiences in full
-  chef/page.tsx          The story, in five chapters
-  inquire/page.tsx       Private inquiry (form → /api/inquire)
-  api/inquire/route.ts   Zod-validated; emails via Resend if configured
-  opengraph-image.tsx    1200×630 share card, rendered at build
-  sitemap.ts · robots.ts · icon.svg · not-found.tsx
-components/
-  sections/              Page sections (server components except where noted)
-  layout/                Header (hide-on-scroll, mobile curtain w/ focus trap), Footer
-  motion/                SmoothScroll (Lenis), RevealObserver, ScrollWords (GSAP), Lines
-  ui/                    Plate (photo slot), Cta, Eyebrow, Monogram
-  seo/JsonLd.tsx         Person + ProfessionalService structured data
-content/                 experiences.ts, method.ts. Edit copy here.
-lib/site.ts              Brand facts: domain, email, region. Single source of truth.
-```
+The site is built as layers, so new ideas plug into the system instead of being bolted onto pages.
+
+### 1. The world (runtime)
+
+| Piece | What it does | Where |
+|---|---|---|
+| **Capability tiers** | An inline script decides before first paint how much of the experience this device receives: `full`, `lite` (Save-Data, 2G/3G, low memory or CPU) or `still` (reduced motion). Nothing visibly downgrades later. | `lib/boot.ts` |
+| **Prelude** | A ~1.6s opening: a brass seal draws, the name rises, a curtain lifts into the hero. It plays once per session, on desktop, in CSS only. Phones go straight to their own hero choreography. | `components/system/Prelude.tsx` |
+| **Page transitions** | View Transitions API. The header persists while the old page sinks into shadow and the new one rises like a curtain. Falls back to normal navigation. | `components/system/Transitions.tsx` |
+| **Cursor** | A brass point plus a weighted ring. It swells over actions, carries a word over things worth opening (`data-cursor-label`), steps aside for text fields, and draws `data-magnetic` elements toward it. Fine pointers only. | `components/system/Cursor.tsx` |
+| **Responsive light** | The hero's candle leans toward the pointer while the name drifts the other way, giving two depth planes. On touch, the light settles with scroll. | `components/system/HeroLight.tsx` |
+| **Room sound** | Optional fire-in-another-room ambience, generated live with Web Audio (no file to download). Always off until asked; fades in and out; goes silent when the tab is hidden. | `components/system/Ambience.tsx` |
+| **Mobile action bar** | "Request an evening" sits where the thumb is, inside the safe area, and steps away near the close and on the inquiry. | `components/system/MobileBar.tsx` |
+| **Parallax and the manifesto** | CSS scroll timelines: compositor-only, zero JavaScript, invisible to browsers that don't support them. | `app/globals.css` |
+
+### 2. Possibilities, not packages
+
+**Compose an evening** (`components/sections/Composer.tsx`, `content/possibilities.ts`). The visitor sets the room (a Connecticut home, a Manhattan penthouse, a Hamptons estate, Florida waterfront, a yacht, a private island, a hangar, abroad), the reason and the scale, then reads the evening written in front of them. The composition carries straight into the inquiry.
+
+### 3. The man
+
+- **The Archive** (`components/sections/Archive.tsx`, `content/archive.ts`): six eras, each with a place and *what it taught him*. Pinned horizontal travel with an era rail on desktop; a vertical sequence on phones and for reduced motion.
+- **The Standards** (`components/sections/Standards.tsx`): how he works, in five sentences.
+
+### 4. The first chapter: the inquiry
+
+`components/inquiry/Concierge.tsx` is a conversation, not a form. It asks one question at a time and branches on the answers:
+
+- **Planners and assistants** are asked about *their client*.
+- **Yachts** are asked about the galley; **islands and travel** about the length of stay.
+- **A collaboration** skips the dinner questions entirely: 6 steps instead of 11.
+
+How it behaves:
+- **Keyboard:** letter keys choose and Enter continues.
+- **Drafts:** progress is saved for 14 days and offered back on return.
+- **Arrivals:** a visitor coming from the composer, an experience page or an invitation starts pre-filled.
+- **Review:** the request is read back as a sentence before sending.
+
+On the server (`app/api/inquire/route.ts`, `lib/inquiry-schema.ts`), every request is:
+- validated with the same rules the conversation uses
+- given a reference (`RG-XXXXXX`)
+- tagged with where the client came from
+- emailed to the office via Resend, or logged when email is not configured
+
+### 5. Infrastructure
+
+- **Attribution** (`lib/attribution.ts`): the first touch (30 days) and this visit's touch, covering UTM, referrer, landing page and invitation, travel with each inquiry. The office sees that a request began on Instagram, a concierge link or a Google search.
+- **Analytics** (`lib/analytics.ts`): one `track()` that fans out to Vercel Analytics, Plausible or a GTM `dataLayer`. Any element with `data-track="name"` reports itself. Events tracked so far:
+  - `cta:*`
+  - `compose_change`
+  - `inquiry_step` (a funnel per step)
+  - `inquiry_submit` (with form, setting, guests, role)
+  - `invite_open`
+  - `sound_toggle`
+
+  No personal data is sent.
+- **Private invitations** (`app/invite/[token]`, `lib/invite.ts`): HMAC-signed links that greet a guest by name, can carry a note and a pre-selected setting, expire on their own, and open the inquiry already addressed to them. They are never indexed, and a tampered link closes politely. This is the foundation for client portals and proposal pages.
+
+  ```bash
+  INVITE_SECRET=... node scripts/invite.mjs "Mr. and Mrs. Whitman" --note "For the anniversary in June." --days 30 --setting yacht
+  ```
+- **SEO**: Person and ProfessionalService JSON-LD with an offer catalogue, BreadcrumbList on interior pages, canonical URLs, a sitemap, and robots rules that exclude `/api` and `/invite`.
 
 ## Run
 
@@ -45,22 +89,31 @@ npm run dev                  # http://localhost:3000
 npm run build && npm start   # production
 ```
 
-Deploy target: Vercel. Set `NEXT_PUBLIC_SITE_URL`, `RESEND_API_KEY`, `INQUIRY_TO_EMAIL`, `INQUIRY_FROM_EMAIL` in the project's environment variables.
+Deploy target: Vercel. Set `NEXT_PUBLIC_SITE_URL`, `INVITE_SECRET`, `RESEND_API_KEY`, `INQUIRY_TO_EMAIL`, `INQUIRY_FROM_EMAIL` in the project's environment variables. Vercel Analytics and Speed Insights switch on automatically there.
 
 ## Verified (production build, Lighthouse 12, mobile, localhost)
 
-| Page | Perf | A11y | Best practices | SEO | CLS |
-|---|---|---|---|---|---|
-| `/` | 95 | 96* | 100 | 100 | 0 |
-| `/experiences` | 97 | 100 | 100 | 100 | 0 |
-| `/chef` | 95 | 100 | 100 | 100 | 0 |
-| `/inquire` | 94 | 100 | 100 | 100 | 0 |
+| Page | Perf | A11y | Best practices | SEO | CLS | TBT |
+|---|---|---|---|---|---|---|
+| `/` | 93 | 96* | 100 | 100 | 0 | 100ms |
+| `/experiences` | 93 | 100 | 100 | 100 | 0 | 80ms |
+| `/chef` | 95 | 100 | 100 | 100 | 0 | 70ms |
+| `/inquire` | 96 | 100 | 100 | 100 | 0 | 80ms |
 
-\* The home flag is the scroll-scrubbed manifesto: words start as ghosts (20% opacity) and resolve to full contrast as they are read. It is a deliberate, transient state; reduced-motion users get full contrast immediately.
+\* The home flag is the manifesto's scroll-linked words, which start at 20% ink and resolve as they are read. It is a deliberate, transient state; reduced-motion visitors see full contrast.
 
-Mobile LCP measured 2.6–3.0s on localhost under simulated slow 4G, including ~450ms local TTFB. Re-measure on the deployed Vercel URL, where edge TTFB should bring it under 2.5s.
+Mobile LCP measured 2.7–3.1s on localhost under simulated slow 4G, including local TTFB. Re-measure on the deployed URL; Speed Insights records real visitors on Vercel.
 
-Also checked: no horizontal overflow at 320/390/768/1024px, one `<h1>` per page, form validation focuses the first invalid field, the mobile menu traps focus and closes on Escape, and there are no console errors.
+End-to-end checks (Playwright):
+- the desktop prelude and cursor
+- composer hand-off to the inquiry
+- the view transition to `/chef` and the pinned archive
+- the planner → yacht → galley/stay → NDA → text-message branch, including its validation errors and the summary sentence
+- server receipt with origin and reference
+- draft resume and the collaboration path (6 steps)
+- a valid invitation (noindex) and a tampered one
+- the mobile action bar
+- no horizontal overflow at 320–1024px, and no console errors
 
 ## Launch checklist: CLIENT must confirm
 
@@ -74,6 +127,10 @@ The site was built from the brief only. Nothing has been invented as a *result*:
 - [ ] **"References, privately"** and the **handwritten note after each evening** (Discretion section and Method step 05): confirm these are true of how Chef works
 - [ ] **Sommelier pairing** and **menu cards** listed under *The Private Table*
 - [ ] Resend account and verified sending domain for inquiry email
+- [ ] **The Archive** eras and their lessons (`content/archive.ts`): add years, named places and archival photographs
+- [ ] **The Standards** (`content/archive.ts`): Chef approves every sentence; they must sound exactly like him
+- [ ] **The settings in the composer** (`content/possibilities.ts`): confirm every place Chef wants clients to imagine him in
+- [ ] `INVITE_SECRET` set in production, and who in the office generates invitations
 
 ## Photography: the one thing that will move this from strong to world-class
 
@@ -92,3 +149,17 @@ Shoot direction: **available light, shallow depth of field, never flash, never o
 | A private room | Chef III | Empty private dining room, single table set for eight. 4:5. |
 
 A 10–15s silent hero loop (candle, steam, hands plating) can replace the hero's CSS atmosphere later. Keep it under 2MB WebM with an MP4 fallback and a poster frame.
+
+## Roadmap: the next decade, already accounted for
+
+Each item has a seam in the current architecture. None needs the identity rebuilt.
+
+| Phase | Builds on | What it adds |
+|---|---|---|
+| **Next** | Plate, Archive | **The shoot.** Portrait, hands, fire, rooms, a 10–15s hero film. This is the single biggest step change available. |
+| | Composer, content model | **Destination pages** (`/destinations/[place]`) for search: Connecticut, Manhattan, the Hamptons, Palm Beach, yachts, islands. Real copy only, no thin pages. |
+| | Telemetry | An analytics dashboard: inquiries by origin, market, setting and form; the step-by-step inquiry funnel. |
+| **Then** | Invitations | **Client portal**: a signed link becomes a private page with the proposal, menu, timeline and preferences. Returning clients are remembered. |
+| | Inquiry schema | **Dynamic proposals**: menus presented interactively, with a multimedia proposal per engagement. |
+| | Content folder → CMS | Sanity or Payload for **the Journal**: films, recipes, writing, press. |
+| **Later** | All of the above | Masterclasses and memberships, limited experiences and residencies, products and collaborations, an availability layer, and a concierge assistant grounded in Chef's own writing. |
