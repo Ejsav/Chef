@@ -1,12 +1,24 @@
 import type { MetadataRoute } from "next";
 import { site } from "@/lib/site";
+import { places } from "@/content/places";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
+  const page = (path: string, priority: number, changeFrequency: "monthly" | "yearly" = "monthly") => ({
+    url: `${site.url}${path}`,
+    lastModified: now,
+    changeFrequency,
+    priority,
+  });
   return [
-    { url: `${site.url}/`, lastModified: now, changeFrequency: "monthly", priority: 1 },
-    { url: `${site.url}/experiences`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
-    { url: `${site.url}/chef`, lastModified: now, changeFrequency: "yearly", priority: 0.8 },
-    { url: `${site.url}/inquire`, lastModified: now, changeFrequency: "yearly", priority: 0.9 },
+    page("/", 1),
+    page("/experiences", 0.9),
+    page("/menus", 0.8),
+    page("/chef", 0.8, "yearly"),
+    page("/private-chef", 0.8),
+    ...places.map((p) => page(`/private-chef/${p.slug}`, 0.8)),
+    page("/questions", 0.7),
+    page("/inquire", 0.9, "yearly"),
+    page("/privacy", 0.2, "yearly"),
   ];
 }

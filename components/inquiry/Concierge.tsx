@@ -200,7 +200,7 @@ export function Concierge() {
       try { localStorage.removeItem(DRAFT); } catch {}
     } catch {
       setStatus("idle");
-      setFormError(`The connection was interrupted. Please try again, or write to ${site.email}.`);
+      setFormError(`The connection was interrupted. Your answers are saved on this device — please try again in a moment${site.email ? `, or write to ${site.email}` : ""}.`);
     }
   }
 
@@ -303,7 +303,7 @@ export function Concierge() {
           >
             <Choices
               field="form"
-              options={answers.role === "brand" || answers.role === "venue" ? [forms[4], ...forms.filter((f) => f.id !== "collaboration")] : forms}
+              options={answers.role === "brand" || answers.role === "venue" ? [...forms.filter((f) => f.id === "collaboration"), ...forms.filter((f) => f.id !== "collaboration")] : forms}
               value={answers.form}
               onChoose={(v, adv) => choose("form", v, adv)}
               error={errors.form}

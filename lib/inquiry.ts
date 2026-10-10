@@ -1,3 +1,5 @@
+import { menus } from "@/content/menus";
+
 // ─────────────────────────────────────────────────────────────────────────
 // The inquiry's vocabulary. Shared by the conversational client (questions,
 // options, summary) and the API route (validation, the email to the office).
@@ -18,6 +20,7 @@ export const forms = [
   { id: "destination", label: "A destination or a stay", hint: "Yachts, islands, travel, several days" },
   { id: "occasion", label: "A celebration or hosted event" },
   { id: "lesson", label: "A private cooking lesson" },
+  { id: "gift", label: "An evening as a gift", hint: "A dinner or a lesson, given to someone you love" },
   { id: "collaboration", label: "A collaboration or appearance" },
   { id: "unsure", label: "I'm not sure yet" },
 ] as const satisfies readonly Opt[];
@@ -154,6 +157,7 @@ export function summarize(a: Partial<Answers>): string {
     destination: "A destination stay",
     occasion: "A hosted celebration",
     lesson: "A private cooking lesson",
+    gift: "An evening given as a gift",
     unsure: "An evening",
     collaboration: "A collaboration",
   }[a.form ?? "unsure"];
@@ -205,6 +209,11 @@ export function prefillFromParams(q: URLSearchParams): Partial<Answers> {
     "the-occasion": "occasion",
   };
   if (exp && formByExperience[exp]) out.form = formByExperience[exp];
+  const menu = q.get("menu");
+  const sample = menu && menus.find((m) => m.slug === menu);
+  if (sample) out.atmosphere = `Something in the spirit of the sample menu “${sample.title}”.`;
+  const form = q.get("form");
+  if (form && forms.some((f) => f.id === form)) out.form = form as Answers["form"];
   const setting = q.get("setting");
   if (setting && settingOptions.some((s) => s.id === setting)) out.setting = setting as Answers["setting"];
   const occasion = q.get("occasion");

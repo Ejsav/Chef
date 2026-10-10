@@ -5,11 +5,11 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 // the rhythm of a tasting menu: one thing at a time, each given room.
 export function Method() {
   return (
-    <section aria-labelledby="method-title" className="tone-linen section relative">
+    <section aria-labelledby="method-title" className="tone-linen section defer-render relative">
       <div className="container-x grid gap-14 md:grid-cols-12">
         <div className="md:col-span-5">
           <div className="md:sticky md:top-[calc(var(--header-h)+3rem)]">
-            <Eyebrow index="IV">The Evening</Eyebrow>
+            <Eyebrow index="V">The Evening</Eyebrow>
             <h2 id="method-title" className="text-h1 mt-10" data-reveal-group>
               <span className="line-mask"><span>How an evening</span></span>
               <span className="line-mask" style={{ "--reveal-delay": "100ms" } as React.CSSProperties}><span className="italic text-accent">is made.</span></span>

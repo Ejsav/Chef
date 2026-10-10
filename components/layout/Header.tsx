@@ -38,6 +38,7 @@ export function Header() {
   useEffect(() => {
     if (!open) return;
     const lenis = getLenis();
+    const toggle = toggleRef.current;
     lenis?.stop();
     document.body.style.overflow = "hidden";
     const panel = panelRef.current;
@@ -57,7 +58,7 @@ export function Header() {
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
       lenis?.start();
-      toggleRef.current?.focus();
+      toggle?.focus();
     };
   }, [open]);
 

@@ -80,6 +80,49 @@ On the server (`app/api/inquire/route.ts`, `lib/inquiry-schema.ts`), every reque
   ```
 - **SEO**: Person and ProfessionalService JSON-LD with an offer catalogue, BreadcrumbList on interior pages, canonical URLs, a sitemap, and robots rules that exclude `/api` and `/invite`.
 
+## Pages
+
+| Route | Purpose |
+|---|---|
+| `/` | Home: hero, premise, Compose an evening, The Table (sample menus), the Chef, the Evening, Discretion, close |
+| `/experiences` | Composer plus the four forms an evening takes |
+| `/menus` | Four sample menus as interactive printed cards |
+| `/chef` | The Archive (six eras) and The Standards |
+| `/private-chef` and `/private-chef/[place]` | Destination pages for Connecticut, New York City, the Hamptons, Florida, yachts and private islands. Each has unique content, FAQ structured data and a pre-filled inquiry. |
+| `/questions` | Booking, pricing, dietary needs, travel, gifts and discretion, with FAQ structured data |
+| `/inquire` | The conversational request, including the gift path |
+| `/invite/[token]` | Signed private invitations (never indexed) |
+| `/privacy` | Plain-language privacy notice |
+
+## Content waiting for Ray
+
+`content/voice.ts` holds Ray's quotes, client testimonials, credentials and press. Every array starts empty, so nothing invented is ever shown. Each section appears automatically once its array has content:
+- a pull quote on the home page
+- "From past hosts" testimonials
+- a credentials row in the Chef section
+
+`docs/RAY_INTERVIEW.md` is the one-hour session that fills all of it and confirms every fact on the site.
+
+## Quality gates
+
+```bash
+npm run type-check   # TypeScript
+npm run lint         # ESLint (next/core-web-vitals)
+npm run build
+npm run test:e2e     # Playwright: 39 checks across desktop and phone
+```
+
+The end-to-end suite checks:
+- every route renders with one `<h1>`, a canonical URL, no horizontal overflow and no console errors
+- no placeholder contact details appear on any page
+- the composer hands off to the inquiry
+- the planner-and-yacht branch works through to a reference number
+- the collaboration and gift paths work
+- the API rejects incomplete requests
+- invitations: a signed one greets the guest, while expired and tampered ones are refused
+
+CI (`.github/workflows/ci.yml`) runs all of the above on every push.
+
 ## Run
 
 ```bash

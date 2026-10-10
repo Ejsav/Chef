@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { nav, site } from "@/lib/site";
+import { footerNav, site } from "@/lib/site";
 import { Monogram } from "@/components/ui/Monogram";
 
 // The footer is the last course: the full name set large, quiet details
@@ -7,7 +7,7 @@ import { Monogram } from "@/components/ui/Monogram";
 export function Footer() {
   const year = new Date().getFullYear();
   return (
-    <footer className="tone-dark relative overflow-hidden border-t border-line">
+    <footer className="tone-dark defer-render relative overflow-hidden border-t border-line">
       <div className="container-x pb-10 pt-[clamp(5rem,10vw,9rem)]">
         <div className="grid gap-14 md:grid-cols-12">
           <div className="md:col-span-5" data-reveal>
@@ -20,7 +20,7 @@ export function Footer() {
             <div>
               <p className="text-eyebrow">The House</p>
               <ul className="mt-5 space-y-3">
-                {nav.map((item) => (
+                {footerNav.map((item) => (
                   <li key={item.href}>
                     <Link href={item.href} className="link-underline pb-0.5 text-fg/85 hover:text-fg">{item.label}</Link>
                   </li>
@@ -30,7 +30,11 @@ export function Footer() {
             <div>
               <p className="text-eyebrow">Correspondence</p>
               <ul className="mt-5 space-y-3">
-                <li><a href={`mailto:${site.email}`} className="link-underline break-all pb-0.5 text-fg/85 hover:text-fg">{site.email}</a></li>
+                {site.email ? (
+                  <li><a href={`mailto:${site.email}`} className="link-underline break-all pb-0.5 text-fg/85 hover:text-fg">{site.email}</a></li>
+                ) : (
+                  <li><Link href="/inquire" className="link-underline pb-0.5 text-fg/85 hover:text-fg">By private request</Link></li>
+                )}
                 {site.social.instagram ? (
                   <li><a href={`https://instagram.com/${site.social.instagram}`} className="link-underline pb-0.5 text-fg/85 hover:text-fg" rel="me noopener" target="_blank">Instagram</a></li>
                 ) : null}
@@ -52,7 +56,10 @@ export function Footer() {
 
       <div className="container-x relative flex flex-col gap-3 border-t border-line py-7 text-[0.7rem] uppercase tracking-[0.22em] text-fg-muted sm:flex-row sm:items-center sm:justify-between">
         <span>© {year} {site.name}</span>
-        <span>Private dining · {site.region}</span>
+        <span className="flex flex-wrap gap-x-6 gap-y-2">
+          <Link href="/privacy" className="link-underline pb-0.5 hover:text-fg">Privacy</Link>
+          <span>Private dining · {site.region}</span>
+        </span>
       </div>
     </footer>
   );

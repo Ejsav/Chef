@@ -21,7 +21,7 @@ export function JsonLd() {
         "@id": `${site.url}/#service`,
         name: site.name,
         url: site.url,
-        email: site.email,
+        ...(site.email ? { email: site.email } : {}),
         description: site.description,
         founder: { "@id": `${site.url}/#chef` },
         areaServed: site.serviceArea.map((name) => ({ "@type": "Place", name })),

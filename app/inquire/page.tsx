@@ -33,18 +33,20 @@ export default function InquirePage() {
               A few questions, each shaped by your last answer. It takes about two minutes, and
               nothing is booked until you have spoken with Chef&rsquo;s office.
             </p>
-            <div className="hero-fade mt-10 hidden space-y-2 border-t border-line pt-8 text-sm lg:block" style={d(800)}>
-              <p className="text-eyebrow">Or write directly</p>
-              <a href={`mailto:${site.email}`} className="link-underline inline-block pb-0.5 text-fg">{site.email}</a>
-            </div>
+            {site.email ? (
+              <div className="hero-fade mt-10 hidden space-y-2 border-t border-line pt-8 text-sm lg:block" style={d(800)}>
+                <p className="text-eyebrow">Or write directly</p>
+                <a href={`mailto:${site.email}`} className="link-underline inline-block pb-0.5 text-fg">{site.email}</a>
+              </div>
+            ) : null}
           </div>
         </aside>
         <div className="hero-fade relative lg:col-span-7 lg:col-start-6" style={d(450)}>
           <Concierge />
           <noscript>
             <p className="text-lead">
-              This request form needs JavaScript. Please write to{" "}
-              <a className="underline" href={`mailto:${site.email}`}>{site.email}</a> with the date, the place and the number of guests.
+              This request form needs JavaScript to run. Please enable it, or return in another browser.
+              {site.email ? <> You can also write to <a className="underline" href={`mailto:${site.email}`}>{site.email}</a>.</> : null}
             </p>
           </noscript>
         </div>

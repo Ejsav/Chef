@@ -19,7 +19,7 @@ const principles = [
 
 export function Discretion() {
   return (
-    <section aria-labelledby="discretion-title" className="tone-dark section relative overflow-hidden">
+    <section aria-labelledby="discretion-title" className="tone-dark section defer-render relative overflow-hidden">
       <div aria-hidden className="absolute left-1/2 top-[30%] -z-0 h-[60vw] max-h-[44rem] w-[60vw] max-w-[44rem] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(108,30,34,0.28),transparent)]" />
       <div className="container-x relative text-center">
         <div className="flex justify-center" data-reveal>
