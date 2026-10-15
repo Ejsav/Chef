@@ -51,7 +51,7 @@ The benchmark is not other chef websites. It is the best of luxury hospitality, 
 | **Menus** | Four sample menus as printed cards on ivory paper: *Sunday, the New Haven way* · *Late summer in Connecticut* · *A night aboard* · *A winter table*. "Begin with a menu like this" carries the choice into the request. |
 | **The Chef** | **The Archive:** six eras of his story that slide past horizontally on desktop (New Haven, the restaurant line, private rooms, the islands, teaching, now), each with what it taught him. Then **The Standards:** five rules for how he works. |
 | **Where he cooks** | An index of six destination pages: **Connecticut · New York City · The Hamptons · Florida · Yachts · Private islands.** Each has its own written content, logistics, areas served and a questions section, with a request button that pre-fills the setting. |
-| **Questions** | 16 answers across booking, pricing approach, the evening, travel, lessons, collaborations and discretion |
+| **Questions** | 17 answers across booking, pricing approach, the evening, travel, lessons, collaborations and discretion |
 | **Inquire** | The conversational request (section 4) |
 | **Private invitation** | A personal page that greets a guest by name |
 | **Privacy** | A plain-language privacy notice |
